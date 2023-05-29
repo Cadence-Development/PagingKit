@@ -48,7 +48,7 @@ public protocol PagingContentViewControllerDelegate: AnyObject {
     ///   - viewController: The view controller object in which the scrolling occurred.
     ///   - index: The left side index where the view controller is showing.
     func contentViewController(viewController: PagingContentViewController, didEndManualScrollOn index: Int)
-
+    
     
     /// Tells the delegate when the view controller is trying to start paging the content.
     /// If it is the same page as the current, this delegate is not called.
@@ -82,7 +82,7 @@ extension PagingContentViewControllerDelegate {
     public func contentViewController(viewController: PagingContentViewController, willBeginManualScrollOn index: Int) {}
     public func contentViewController(viewController: PagingContentViewController, didManualScrollOn index: Int, percent: CGFloat) {}
     public func contentViewController(viewController: PagingContentViewController, didEndManualScrollOn index: Int) {}
-
+    
     public func contentViewController(viewController: PagingContentViewController, willBeginPagingAt index: Int, animated: Bool) {}
     public func contentViewController(viewController: PagingContentViewController, willFinishPagingAt index: Int, animated: Bool) {}
     public func contentViewController(viewController: PagingContentViewController, didFinishPagingAt index: Int, animated: Bool) {}
@@ -141,7 +141,7 @@ public class PagingContentViewController: UIViewController {
         let rawPagingPercent = scrollView.contentOffset.x.truncatingRemainder(dividingBy: scrollView.bounds.width) / scrollView.bounds.width
         return rawPagingPercent
     }
-
+    
     var appearanceHandler: ContentsAppearanceHandlerProtocol = ContentsAppearanceHandler()
     
     /// The object that acts as the delegate of the content view controller.
@@ -149,9 +149,9 @@ public class PagingContentViewController: UIViewController {
     
     /// The object that provides view controllers.
     public weak var dataSource: PagingContentViewControllerDataSource?
-
+    
     public var isEnabledPreloadContent = true
-
+    
     /// The ratio at which the origin of the content view is offset from the origin of the scroll view.
     public var contentOffsetRatio: CGFloat {
         return scrollView.contentOffset.x / (scrollView.contentSize.width - scrollView.bounds.width)
@@ -321,7 +321,7 @@ public class PagingContentViewController: UIViewController {
         super.viewDidDisappear(animated)
         appearanceHandler.callApparance(.viewDidDisappear, animated: animated, at: leftSidePageIndex)
     }
-
+    
     override public func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         scrollView.contentSize = CGSize(
@@ -340,7 +340,7 @@ public class PagingContentViewController: UIViewController {
     override public func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
-
+    
     override public func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         coordinator.animate(alongsideTransition: { [weak self] (context) in
             guard let _self = self else { return }
@@ -449,12 +449,6 @@ extension PagingContentViewController: UIScrollViewDelegate {
         }
     }
     
-    public func scrollViewWillBeginDecelerating(_ scrollView: UIScrollView) {
-        if let explicitPaging = explicitPaging, explicitPaging.isPaging {
-            delegate?.contentViewController(viewController: self, willFinishPagingAt: currentPageIndex, animated: true)
-        }
-    }
-    
     public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         // When scrollview is bouncing, touching the scrollview calls scrollViewDidEndDecelerating(_:) immediately. So this line guards the end process.
         guard 0 <= scrollView.bounds.origin.x, scrollView.bounds.maxX <= scrollView.contentSize.width else { return }
@@ -465,9 +459,12 @@ extension PagingContentViewController: UIScrollViewDelegate {
             delegate?.contentViewController(viewController: self, didEndManualScrollOn: leftSidePageIndex)
             if explicitPaging.isPaging {
                 appearanceHandler.stopScrolling(at: leftSidePageIndex)
-
+                
                 delegate?.contentViewController(viewController: self, didFinishPagingAt: leftSidePageIndex, animated: true)
             }
+        } else {
+            let finishIndex = Int(scrollView.contentOffset.x / scrollView.bounds.width)
+            delegate?.contentViewController(viewController: self, didFinishPagingAt: leftSidePageIndex, animated: true)
         }
         explicitPaging = nil
     }
@@ -487,5 +484,10 @@ extension PagingContentViewController: UIScrollViewDelegate {
             }
         }
         explicitPaging = nil
+    }
+    
+    public func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
+        let nextPage = Int(targetContentOffset.pointee.x/view.bounds.width)
+        delegate?.contentViewController(viewController: self, willFinishPagingAt: nextPage, animated: true)
     }
 }
