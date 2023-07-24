@@ -182,18 +182,15 @@ public class PagingContentViewController: UIViewController {
         let preferredPage = page ?? leftSidePageIndex
         leftSidePageIndex = preferredPage
         initialLoad(with: preferredPage)
-        UIView.pk.catchLayoutCompletion(
-            layout: { [weak self] in
-                self?.view.setNeedsLayout()
-                self?.view.layoutIfNeeded()
-            },
-            completion: { [weak self] _ in
-                self?.scroll(to: preferredPage, needsCallAppearance: false, animated: false) { _ in
-                    self?.appearanceHandler.postReload(at: preferredPage)
-                    completion?()
-                }
+        UIView.animate(withDuration: 0, animations: {[weak self] in
+            self?.view.setNeedsLayout()
+            self?.view.layoutIfNeeded()
+        }) {[weak self] (finish) in
+            self?.scroll(to: preferredPage, needsCallAppearance: false, animated: false) { _ in
+                self?.appearanceHandler.postReload(at: preferredPage)
+                completion?()
             }
-        )
+        }
     }
     
     /// Scrolls a specific page of the contents so that it is visible in the receiver.
@@ -252,14 +249,11 @@ public class PagingContentViewController: UIViewController {
                 }
             )
         } else {
-            UIView.pk.catchLayoutCompletion(
-                layout: { [weak self] in
-                    self?.scrollView.contentOffset = CGPoint(x: offsetX, y: 0)
-                },
-                completion: { _ in
-                    completion(true)
-                }
-            )
+            UIView.animate(withDuration: 0, animations: {[weak self] in
+                self?.scrollView.contentOffset = CGPoint(x: offsetX, y: 0)
+            }) { (finish) in
+                completion(true)
+            }
         }
     }
     

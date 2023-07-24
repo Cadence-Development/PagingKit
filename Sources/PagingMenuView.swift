@@ -280,14 +280,11 @@ open class PagingMenuView: UIScrollView {
         focusView.selectedIndex = index
         contentOffset = .zero
         _reloadData()
-        UIView.pk.catchLayoutCompletion(
-            layout: { [weak self] in
-                self?.scroll(index: index)
-            },
-            completion: { finish in
-                completion?(finish)
-            }
-        )
+        UIView.animate(withDuration: 0, animations: {[weak self] in
+            self?.scroll(index: index)
+        }) { (finish) in
+            completion?(finish)
+        }
     }
     
     /// Registers a nib object containing a cell with the paging menu view under a specified identifier.
