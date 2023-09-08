@@ -442,7 +442,8 @@ open class PagingMenuView: UIScrollView {
     open func scroll(index: Int, completeHandler: @escaping (Bool) -> Void) {
         let itemFrame = rectForItem(at: index)
         
-        let offsetX = hasScrollableArea ? itemFrame.midX - bounds.width / 2 : minContentOffsetX
+        let isScrollable = (safedViewWidth - contentInset.left) < contentSize.width
+        let offsetX = isScrollable ? itemFrame.midX - bounds.width / 2 : minContentOffsetX
         let offset = CGPoint(x: min(max(minContentOffsetX, offsetX), maxContentOffsetX), y: 0)
 
         focusView.selectedIndex = index
