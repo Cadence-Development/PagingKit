@@ -420,13 +420,14 @@ open class PagingMenuView: UIScrollView {
         focusView.frame.size = CGSize(width: width, height: bounds.height)
         
         let centerPointX = leftFrame.midX + (rightFrame.midX - leftFrame.midX) * percent
-        let offsetX = centerPointX - bounds.width / 2
-        let normaizedOffsetX = min(max(minContentOffsetX, offsetX), maxContentOffsetX)
         focusView.center = CGPoint(x: centerPointX, y: center.y)
         
         let expectedIndex = (focusView.center.x < leftFrame.maxX) ? index : rightIndex
         focusView.selectedIndex = max(0, min(expectedIndex, numberOfItem - 1))
         
+        let isScrollable = (safedViewWidth - contentInset.left) < contentSize.width
+        let offsetX = isScrollable ? centerPointX - bounds.width / 2 : minContentOffsetX
+        let normaizedOffsetX = min(max(minContentOffsetX, offsetX), maxContentOffsetX)
         contentOffset = CGPoint(x: normaizedOffsetX, y:0)
         
         if let index = focusView.selectedIndex {
@@ -444,7 +445,8 @@ open class PagingMenuView: UIScrollView {
         
         let isScrollable = (safedViewWidth - contentInset.left) < contentSize.width
         let offsetX = isScrollable ? itemFrame.midX - bounds.width / 2 : minContentOffsetX
-        let offset = CGPoint(x: min(max(minContentOffsetX, offsetX), maxContentOffsetX), y: 0)
+        let normalizedOffsetX = min(max(minContentOffsetX, offsetX), maxContentOffsetX)
+        let offset = CGPoint(x: normalizedOffsetX, y: 0)
 
         focusView.selectedIndex = index
         visibleCells.selectCell(with: index)
@@ -533,23 +535,6 @@ open class PagingMenuView: UIScrollView {
 
     private var numberOfCellSpacing: CGFloat {
         return max(CGFloat(numberOfItem - 1), 0)
-    }
-    
-    private func recenterIfNeeded() {
-        let currentOffset = contentOffset
-        let contentWidth = contentSize.width
-        let centerOffsetX = (contentWidth - bounds.size.width) / 2
-        let distanceFromCenter = abs(currentOffset.x - centerOffsetX)
-        
-        if distanceFromCenter > (contentWidth - bounds.size.width) / 4 {
-            contentOffset = CGPoint(x: centerOffsetX, y: currentOffset.y)
-            
-            for cell in visibleCells {
-                var center = containerView.convert(cell.center, to: self)
-                center.x += centerOffsetX - currentOffset.x
-                cell.center = convert(center, to: containerView)
-            }
-        }
     }
     
     private func alignEachVisibleCell() {
