@@ -166,6 +166,11 @@ public class PagingContentViewController: UIViewController {
         return calcCurrentPagingPercent(leftSidePagingPercent)
     }
     
+    public var currentPageContentController: UIViewController? {
+        let index = currentPageIndex
+        guard cachedViewControllers.count > index else { return nil }
+        return cachedViewControllers[index]
+    }
     
     /// previsous or next focusing index
     public var adjucentPageIndex: Int {
