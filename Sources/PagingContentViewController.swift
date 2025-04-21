@@ -271,6 +271,9 @@ public class PagingContentViewController: UIViewController {
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.bounces = false
         scrollView.backgroundColor = .clear
+        if UIView.userInterfaceLayoutDirection(for: UIView.appearance().semanticContentAttribute) == .rightToLeft {
+            scrollView.transform = CGAffineTransform(scaleX: -1, y: 1)
+        }
         return scrollView
     }()
     
@@ -379,6 +382,10 @@ public class PagingContentViewController: UIViewController {
             scrollView.addSubview(vc.view)
             vc.didMove(toParent: self)
             cachedViewControllers[page] = vc
+            
+            if UIView.userInterfaceLayoutDirection(for: UIView.appearance().semanticContentAttribute) == .rightToLeft {
+                vc.view.transform = CGAffineTransform(scaleX: -1, y: 1)
+            }
         }
     }
     

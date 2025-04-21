@@ -531,6 +531,11 @@ open class PagingMenuView: UIScrollView {
     private func configureView() {
         backgroundColor = .clear
         addObserver(self, forKeyPath: #keyPath(UIView.bounds), options: [.old, .new], context: nil)
+        
+        if UIView.userInterfaceLayoutDirection(for: UIView.appearance().semanticContentAttribute) == .rightToLeft {
+            // Flip the scroll view horizontally
+            transform = CGAffineTransform(scaleX: -1, y: 1)
+        }
     }
 
     private var numberOfCellSpacing: CGFloat {
@@ -566,6 +571,10 @@ open class PagingMenuView: UIScrollView {
         
         menuDelegate?.pagingMenuView(pagingMenuView: self, willDisplay: cell, forItemAt: nextIndex)
 
+        if UIView.userInterfaceLayoutDirection(for: UIView.appearance().semanticContentAttribute) == .rightToLeft {
+            cell.transform = CGAffineTransform(scaleX: -1, y: 1)
+        }
+        
         return cell.frame.maxX
     }
     
@@ -587,6 +596,10 @@ open class PagingMenuView: UIScrollView {
         cell.frame.origin = CGPoint(x: leftEdge - widths[nextIndex] - cellSpacing, y: 0)
 
         menuDelegate?.pagingMenuView(pagingMenuView: self, willDisplay: cell, forItemAt: nextIndex)
+        
+        if UIView.userInterfaceLayoutDirection(for: UIView.appearance().semanticContentAttribute) == .rightToLeft {
+            cell.transform = CGAffineTransform(scaleX: -1, y: 1)
+        }
         
         return cell.frame.minX
     }
